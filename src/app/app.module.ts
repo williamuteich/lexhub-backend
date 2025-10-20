@@ -9,6 +9,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { ClientModule } from 'src/client/client.module';
+import { EnderecoModule } from 'src/endereco/endereco.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ClientModule } from 'src/client/client.module';
     UserModule, 
     ClientModule,
     StorageModule,
+    EnderecoModule,
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1000, limit: 3 },
       { name: 'medium', ttl: 10000, limit: 30 },

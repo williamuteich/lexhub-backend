@@ -5,6 +5,8 @@ import { ClientDto } from './dto/client.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { HashingServiceProtocol } from 'src/auth/hashingPassword/hashing.service';
+import { PayloadTokenDto } from 'src/auth/config/payload-token-dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class ClientService {
@@ -17,6 +19,8 @@ export class ClientService {
     phone: true,
     birthDate: true,
     sex: true,
+    role: true,
+    endereco: true,
     status: true,
     createdAt: true,
     updatedAt: true,
@@ -40,7 +44,7 @@ export class ClientService {
     return clients;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, payloadTokenDto: PayloadTokenDto) {
     try {
       const client = await this.prisma.client.findUnique({
         where: { id },
@@ -48,6 +52,10 @@ export class ClientService {
       });
 
       if (!client) throw new HttpException('Client not found', HttpStatus.NOT_FOUND);
+
+      if (payloadTokenDto.role === Role.CLIENT && payloadTokenDto.sub !== id) {
+        throw new HttpException('You can only view your own data', HttpStatus.FORBIDDEN);
+      }
 
       return client;
     } catch (error) {
@@ -75,11 +83,19 @@ export class ClientService {
     }
   }
 
-  async update(id: string, updateClientDto: UpdateClientDto) {
+  async update(id: string, updateClientDto: UpdateClientDto, payloadTokenDto: PayloadTokenDto) {
     try {
+      if (payloadTokenDto.role === Role.CLIENT && payloadTokenDto.sub !== id) {
+        throw new HttpException('You can only update your own data', HttpStatus.FORBIDDEN);
+      }
+
       const updatedData = { ...updateClientDto };
       if (updatedData.password) {
         updatedData.password = await this.hashingService.hash(updatedData.password);
+      }
+
+      if (payloadTokenDto.role === Role.CLIENT && updatedData.role) {
+        throw new HttpException('You cannot change your own role', HttpStatus.FORBIDDEN);
       }
 
       const client = await this.prisma.client.update({

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 
 export class ClientDto {
   @ApiProperty({
@@ -50,6 +51,13 @@ export class ClientDto {
     example: 'M',
   })
   sex: string;
+
+  @ApiProperty({
+    description: 'Client role',
+    enum: Role,
+    example: Role.CLIENT,
+  })
+  role: Role;
 
   @ApiProperty({
     description: 'Client account status',

@@ -1,13 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { 
   IsBoolean, 
   IsDateString, 
-  IsEmail, 
+  IsEmail,
+  IsEnum, 
   IsNotEmpty, 
   IsOptional, 
   IsString, 
   MinLength 
 } from "class-validator";
+import { Role } from "@prisma/client";
 
 export class CreateClientDto {
   @ApiProperty({ example: 'John Doe' })
@@ -50,4 +52,9 @@ export class CreateClientDto {
   @IsString()
   @IsNotEmpty()
   sex: string;
+
+  @ApiPropertyOptional({ enum: Role, example: Role.CLIENT })
+  @IsEnum(Role)
+  @IsOptional()
+  role?: Role;
 }

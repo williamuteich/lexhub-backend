@@ -41,7 +41,11 @@ O projeto é dividido em três aplicações:
 
 1. **Clone o repositório**
 ```bash
+<<<<<<< HEAD
 git clone https://github.com/seu-usuario/lexhub-backend.git
+=======
+git clone [https://github.com/seu-usuario/lexhub-backend.git](https://github.com/williamuteich/lexhub-backend.git)
+>>>>>>> 6366b2e44a6394084f3a46c3de2cd9a2917be7de
 cd lexhub-backend
 ```
 
@@ -109,7 +113,11 @@ Este projeto está sob a licença MIT.
 
 ## 📞 Contato
 
+<<<<<<< HEAD
 **Link do Projeto:** [https://github.com/seu-usuario/lexhub-backend](https://github.com/seu-usuario/lexhub-backend)
+=======
+**Email: williamuteich14@gmail.com
+>>>>>>> 6366b2e44a6394084f3a46c3de2cd9a2917be7de
 
 ---
 

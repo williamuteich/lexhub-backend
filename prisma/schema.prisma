@@ -28,6 +28,7 @@ model User {
 enum Role {
   ADMIN
   COLLABORATOR
+  CLIENT
 }
 
 model Client {
@@ -36,11 +37,49 @@ model Client {
   email     String   @unique
   avatar    String?
   password  String
-  cpf       String
+  cpf       String   @unique
   phone     String
   birthDate String
   sex       String
+  role      Role     @default(CLIENT)
   status    Boolean  @default(true)
+
+  endereco Endereco[]
+  document Document[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Endereco {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String   @db.ObjectId
+  bairro      String
+  endereco    String
+  numero      String
+  complemento String?
+  estado      String
+  cidade      String
+  cep         String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([cep])
+}
+
+model Document {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String   @db.ObjectId
+  name        String
+  fileUrl     String
+  fileKey     String
+  fileSize    Int?
+  mimeType    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([clientId])
 }

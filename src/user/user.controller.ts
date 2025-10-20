@@ -15,7 +15,6 @@ import { PayloadTokenDto } from 'src/auth/config/payload-token-dto';
 import { UpdateUserDto } from './dto/user-update-dto';
 import { FILE_UPLOAD_CONSTRAINTS, FILE_UPLOAD_MESSAGES } from 'src/storage/constants/file-upload.constants';
 
-
 @Controller('users')
 @ApiTags('users')
 @LongThrottle()
