@@ -29,3 +29,18 @@ enum Role {
   ADMIN
   COLLABORATOR
 }
+
+model Client {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  avatar    String?
+  password  String
+  cpf       String
+  phone     String
+  birthDate String
+  sex       String
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

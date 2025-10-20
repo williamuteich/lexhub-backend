@@ -8,11 +8,13 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { ClientModule } from 'src/client/client.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(), 
     UserModule, 
+    ClientModule,
     StorageModule,
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1000, limit: 3 },
