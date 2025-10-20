@@ -1,5 +1,5 @@
-import { 
-  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query
+import {
+  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UploadedFile
 } from '@nestjs/common';
 import { TokenPayload } from 'src/auth/decorator/token-payload.decorator';
 import { PayloadTokenDto } from 'src/auth/config/payload-token-dto';
@@ -7,15 +7,18 @@ import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ClientDto } from './dto/client.dto';
-import { 
-  ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags 
+import {
+  ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags
 } from '@nestjs/swagger';
+import { UploadAvatar } from 'src/common/decorators/upload-avatar.decorator';
 import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
 import { Role } from '@prisma/client';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
+import { FILE_UPLOAD_CONSTRAINTS } from 'src/storage/constants/file-upload.constants';
 
 @Controller('client')
 @ApiTags('clients')
@@ -23,7 +26,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 @UseGuards(AuthTokenGuard, RolesGuard)
 @ApiBearerAuth()
 export class ClientController {
-  constructor(private readonly clientService: ClientService) {}
+  constructor(private readonly clientService: ClientService) { }
 
   @Get()
   @Roles(Role.ADMIN, Role.COLLABORATOR)
@@ -57,6 +60,19 @@ export class ClientController {
   @ApiOkResponse({ description: 'Client updated successfully', type: UpdateClientDto })
   update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto, @TokenPayload() payloadTokenDto: PayloadTokenDto): Promise<{ message: string; client: ClientDto }> {
     return this.clientService.update(id, updateClientDto, payloadTokenDto);
+  }
+
+  @Patch(':id/avatar')
+  @Roles(Role.ADMIN, Role.COLLABORATOR)
+  @UploadAvatar()
+  @ApiOperation({ summary: 'Upload client avatar', description: 'Upload avatar image to R2 and update client profile' })
+  @ApiParam({ name: 'id', type: String, description: 'Client ID', example: '68f01cf97f0e9eb12f558567' })
+  @ApiOkResponse({ description: 'Avatar successfully updated', type: ClientDto })
+  async uploadAvatar(
+    @Param('id') id: string,
+    @UploadedFile(new FileValidationPipe(FILE_UPLOAD_CONSTRAINTS.ALLOWED_IMAGE_MIME_TYPES)) file: Express.Multer.File
+  ) {
+    return this.clientService.uploadAvatar(id, file);
   }
 
   @Delete(':id')

@@ -1,42 +1,75 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { 
+  Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, HttpException, HttpStatus 
+} from '@nestjs/common';
 import { DocumentService } from './document.service';
-import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { 
+  ApiBearerAuth, 
+  ApiTags, 
+  ApiOperation, 
+  ApiOkResponse, 
+  ApiParam, 
+  ApiCreatedResponse,
+  ApiNotFoundResponse
+} from '@nestjs/swagger';
 import { LongThrottle } from 'src/common/throttle/throttle.decorators';
+import { Roles } from 'src/auth/decorator/roles.decorator';
+import { Role } from 'generated/prisma';
+import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
+import { UploadFile } from 'src/common/decorators/upload-file.decorator';
 
 @Controller('document')
 @ApiTags('document')
 @LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.COLLABORATOR)
 @ApiBearerAuth()
 export class DocumentController {
-  constructor(private readonly documentService: DocumentService) {}
-
-  @Post()
-  create(@Body() createDocumentDto: CreateDocumentDto) {
-    return this.documentService.create(createDocumentDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.documentService.findAll();
-  }
+  constructor(private readonly documentService: DocumentService) { }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a document by ID' })
+  @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
+  @ApiOkResponse({ description: 'Document found' })
+  @ApiNotFoundResponse({ description: 'Document not found' })
   findOne(@Param('id') id: string) {
-    return this.documentService.findOne(+id);
+    return this.documentService.findOne(id);
+  }
+
+  @Post(':clientId')
+  @UploadFile()
+  @ApiOperation({ summary: 'Upload a document for a client', description: 'Upload a document file to R2 and save metadata' })
+  @ApiParam({ name: 'clientId', type: String, description: 'Client ID', example: '507f1f77bcf86cd799439011' })
+  @ApiCreatedResponse({ description: 'Document successfully created' })
+  async create(
+    @Param('clientId') clientId: string,
+    @Body() body: { name: string },
+    @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
+  ) {
+    if (!body.name) {
+      throw new HttpException('Document name is required', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.documentService.create(clientId, body.name, file);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a document by ID' })
+  @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
+  @ApiOkResponse({ description: 'Document updated successfully' })
+  @ApiNotFoundResponse({ description: 'Document not found' })
   update(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
-    return this.documentService.update(+id, updateDocumentDto);
+    return this.documentService.update(id, updateDocumentDto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a document by ID' })
+  @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
+  @ApiOkResponse({ description: 'Document deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Document not found' })
   remove(@Param('id') id: string) {
-    return this.documentService.remove(+id);
+    return this.documentService.remove(id);
   }
 }

@@ -124,6 +124,9 @@ export class EnderecoService {
 
   async remove(id: string): Promise<{ message: string }> {
     try {
+      const endereco = await this.prisma.endereco.findUnique({ where: { id } });
+      if (!endereco) throw new HttpException('Endereco not found', HttpStatus.NOT_FOUND);
+
       await this.prisma.endereco.delete({ where: { id } });
       return { message: 'Endereco deleted successfully' };
     } catch (error) {

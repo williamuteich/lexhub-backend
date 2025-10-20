@@ -10,6 +10,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { ClientModule } from 'src/client/client.module';
 import { EnderecoModule } from 'src/endereco/endereco.module';
+import { DocumentModule } from 'src/document/document.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EnderecoModule } from 'src/endereco/endereco.module';
     ClientModule,
     StorageModule,
     EnderecoModule,
+    DocumentModule,
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1000, limit: 3 },
       { name: 'medium', ttl: 10000, limit: 30 },
