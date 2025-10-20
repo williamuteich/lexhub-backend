@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards, Patch, UploadedFile, UseInterceptors, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiNotFoundResponse, ApiParam, ApiBody, ApiQuery, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards, Patch, UploadedFile } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiNotFoundResponse, ApiParam, ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { UploadAvatar } from 'src/common/decorators/upload-avatar.decorator';
 import { UserService } from './user.service';
 import { UserDto } from './dto/userDto';
 import { CreateUserDto } from './dto/user-create-dto';
@@ -13,7 +13,8 @@ import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
 import { PayloadTokenDto } from 'src/auth/config/payload-token-dto';
 import { UpdateUserDto } from './dto/user-update-dto';
-import { FILE_UPLOAD_CONSTRAINTS, FILE_UPLOAD_MESSAGES } from 'src/storage/constants/file-upload.constants';
+import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
+import { FILE_UPLOAD_CONSTRAINTS } from 'src/storage/constants/file-upload.constants';
 
 @Controller('users')
 @ApiTags('users')
@@ -66,40 +67,15 @@ export class UserController {
 
   @Patch(':id/avatar')
   @Roles(Role.ADMIN, Role.COLLABORATOR)
-  @UseInterceptors(FileInterceptor('file'))
+  @UploadAvatar()
   @ApiOperation({ summary: 'Upload user avatar', description: 'Upload avatar image to R2 and update user profile' })
-  @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', type: String, description: 'User ID', example: '68f01cf97f0e9eb12f558567' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
   @ApiOkResponse({ description: 'Avatar successfully updated', type: UserDto })
-  @ApiBadRequestResponse({ description: 'Invalid file or user not found' })
   async uploadAvatar(
     @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(new FileValidationPipe(FILE_UPLOAD_CONSTRAINTS.ALLOWED_IMAGE_MIME_TYPES)) file: Express.Multer.File,
     @TokenPayload() tokenPayload: PayloadTokenDto,
   ) {
-    if (!file) {
-      throw new HttpException(FILE_UPLOAD_MESSAGES.NO_FILE, HttpStatus.BAD_REQUEST);
-    }
-
-    if (!FILE_UPLOAD_CONSTRAINTS.ALLOWED_IMAGE_MIME_TYPES.includes(file.mimetype)) {
-      throw new HttpException(FILE_UPLOAD_MESSAGES.INVALID_TYPE, HttpStatus.BAD_REQUEST);
-    }
-
-    if (file.size > FILE_UPLOAD_CONSTRAINTS.MAX_FILE_SIZE) {
-      throw new HttpException(FILE_UPLOAD_MESSAGES.FILE_TOO_LARGE, HttpStatus.BAD_REQUEST);
-    }
-
     return this.userService.updateAvatar(id, file, tokenPayload);
   }
 

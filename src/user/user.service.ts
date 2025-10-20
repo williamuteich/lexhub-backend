@@ -87,7 +87,7 @@ export class UserService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, payloadTokenDto: PayloadTokenDto): Promise<UserDto> {
+  async update(id: string, updateUserDto: UpdateUserDto, payloadTokenDto: PayloadTokenDto): Promise<{ message: string; user: UserDto }> {
     try {
       const isAdmin = payloadTokenDto.role === Role.ADMIN;
 
@@ -114,11 +114,13 @@ export class UserService {
         updatedData.password = await this.hashingService.hash(updatedData.password);
       }
 
-      return await this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id },
         data: updatedData,
         select: this.userSelect,
       });
+
+      return { message: 'User updated successfully', user };
     } catch (error) {
       if (error instanceof HttpException) throw error;
       console.error(error);
@@ -126,7 +128,7 @@ export class UserService {
     }
   }
 
-  async updateAvatar(id: string, file: Express.Multer.File, payloadTokenDto: PayloadTokenDto): Promise<UserDto> {
+  async updateAvatar(id: string, file: Express.Multer.File, payloadTokenDto: PayloadTokenDto): Promise<{ message: string; user: UserDto }> {
     try {
       if (payloadTokenDto.role !== Role.ADMIN && payloadTokenDto.sub !== id) {
         throw new HttpException('You can only update your own avatar', HttpStatus.FORBIDDEN);
@@ -142,11 +144,13 @@ export class UserService {
 
       const uploadResult = await this.storageService.uploadFile(file, 'avatars');
 
-      return await this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id },
         data: { avatar: uploadResult.url },
         select: this.userSelect,
       });
+
+      return { message: 'Avatar updated successfully', user };
     } catch (error) {
       if (error instanceof HttpException) throw error;
       console.error(error);
@@ -160,11 +164,15 @@ export class UserService {
         throw new HttpException('You can only delete your own account', HttpStatus.FORBIDDEN);
       }
 
+      const user = await this.prisma.user.findUnique({ where: { id } });
+      if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
       await this.prisma.user.delete({ where: { id } });
 
       return { message: 'User deleted successfully' };
     } catch (error) {
       if (error instanceof HttpException) throw error;
+      console.error(error);
       throw new HttpException('Failed to delete user', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
