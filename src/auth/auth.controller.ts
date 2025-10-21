@@ -19,7 +19,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Invalid credentials.',
   })
-  async LoginAuth(@Body() signInDto: SignInDto) {
+  async LoginAuth(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
     return this.authService.LoginAuth(signInDto);
   }
 }

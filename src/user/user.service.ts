@@ -62,16 +62,16 @@ export class UserService {
     }
   }
 
-  async create(createUserDto: CreateUserDto): Promise<UserDto> {
+  async create(createUserDto: CreateUserDto): Promise<{ message: string; user: UserDto }> {
     try {
       const { name, email, password, avatar, role } = createUserDto;
 
       const userExist = await this.prisma.user.findUnique({ where: { email } });
-      if (userExist) throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      if (userExist) throw new HttpException('User already exists', HttpStatus.CONFLICT);
 
       const hashedPassword = await this.hashingService.hash(password);
 
-      return await this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           name,
           email,
@@ -81,6 +81,8 @@ export class UserService {
         },
         select: this.userSelect,
       });
+
+      return { message: 'User created successfully', user };
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new HttpException('Failed to create user', HttpStatus.INTERNAL_SERVER_ERROR);

@@ -71,7 +71,7 @@ export class ClientService {
   async create(createClientDto: CreateClientDto): Promise<{ message: string; client: ClientDto }> {
     try {
       const clientExist = await this.prisma.client.findUnique({ where: { email: createClientDto.email } });
-      if (clientExist) throw new HttpException('Client already exists', HttpStatus.BAD_REQUEST);
+      if (clientExist) throw new HttpException('Client already exists', HttpStatus.CONFLICT);
 
       const client = await this.prisma.client.create({
         data: createClientDto,

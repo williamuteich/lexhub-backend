@@ -20,3 +20,5 @@ export function UploadFile() {
     ApiBadRequestResponse({ description: 'Invalid file' }),
   );
 }
+
+export const UploadAvatar = UploadFile;

@@ -19,6 +19,7 @@ import { Roles } from 'src/auth/decorator/roles.decorator';
 import { Role } from 'generated/prisma';
 import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
 import { UploadFile } from 'src/common/decorators/upload-file.decorator';
+import { DocumentDto } from './dto/document.dto';
 
 @Controller('document')
 @ApiTags('document')
@@ -34,7 +35,7 @@ export class DocumentController {
   @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
   @ApiOkResponse({ description: 'Document found' })
   @ApiNotFoundResponse({ description: 'Document not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<DocumentDto> {
     return this.documentService.findOne(id);
   }
 
@@ -60,7 +61,7 @@ export class DocumentController {
   @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
   @ApiOkResponse({ description: 'Document updated successfully' })
   @ApiNotFoundResponse({ description: 'Document not found' })
-  update(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
+  update(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto): Promise<{ message: string; document: DocumentDto }> {
     return this.documentService.update(id, updateDocumentDto);
   }
 
@@ -69,7 +70,7 @@ export class DocumentController {
   @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
   @ApiOkResponse({ description: 'Document deleted successfully' })
   @ApiNotFoundResponse({ description: 'Document not found' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string): Promise<{ message: string }> {
     return this.documentService.remove(id);
   }
 }

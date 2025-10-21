@@ -10,7 +10,7 @@ import { ClientDto } from './dto/client.dto';
 import {
   ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags
 } from '@nestjs/swagger';
-import { UploadAvatar } from 'src/common/decorators/upload-avatar.decorator';
+import { UploadAvatar } from 'src/common/decorators/upload-file.decorator';
 import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
@@ -71,7 +71,7 @@ export class ClientController {
   async uploadAvatar(
     @Param('id') id: string,
     @UploadedFile(new FileValidationPipe(FILE_UPLOAD_CONSTRAINTS.ALLOWED_IMAGE_MIME_TYPES)) file: Express.Multer.File
-  ) {
+  ): Promise<{ message: string; client: ClientDto }> {
     return this.clientService.uploadAvatar(id, file);
   }
 

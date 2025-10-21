@@ -13,6 +13,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  COLLABORATOR
+  CLIENT
+}
+
+enum ProcessoStatus {
+  ATIVO
+  ARQUIVADO
+  ENCERRADO
+  SUSPENSO
+}
+
+enum TipoProcesso {
+  CIVEL
+  TRABALHISTA
+  CRIMINAL
+  FAMILIA
+  TRIBUTARIO
+  ADMINISTRATIVO
+  OUTRO
+}
+
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
@@ -21,14 +44,14 @@ model User {
   role      Role     @default(COLLABORATOR)
   password  String
   status    Boolean  @default(true)
+  
+  oab       String?
+  ufOab     String?
+  
+  processos Processo[] @relation("AdvogadoProcessos")
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum Role {
-  ADMIN
-  COLLABORATOR
-  CLIENT
 }
 
 model Client {
@@ -44,8 +67,9 @@ model Client {
   role      Role     @default(CLIENT)
   status    Boolean  @default(true)
 
-  endereco Endereco[]
-  document Document[]
+  endereco  Endereco[]
+  document  Document[]
+  processos Processo[] @relation("ClienteProcessos")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -83,3 +107,54 @@ model Document {
 
   @@index([clientId])
 }
+
+model Processo {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  numeroProcesso   Int            @unique
+  tipo             TipoProcesso   @default(CIVEL)
+  status           ProcessoStatus @default(ATIVO)
+  
+  dataAbertura     DateTime       @default(now())
+  dataEncerramento DateTime?
+  
+  client           Client         @relation("ClienteProcessos", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId         String         @db.ObjectId
+
+  responsavel      User           @relation("AdvogadoProcessos", fields: [responsavelId], references: [id], onDelete: Cascade)
+  responsavelId    String         @db.ObjectId
+  
+  parteContraria   String
+  
+  documentos       DocumentoProcesso[]
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  @@index([clientId])
+  @@index([responsavelId])
+  @@index([status])
+}
+
+
+model DocumentoProcesso {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  processo    Processo @relation(fields: [processoId], references: [id], onDelete: Cascade)
+  processoId  String   @db.ObjectId
+  
+  nome        String   
+  descricao   String?  
+  tipo        String? 
+  
+
+  fileUrl     String
+  fileKey     String
+  fileSize    Int?
+  mimeType    String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([processoId])
+  @@index([tipo])
+}
+  

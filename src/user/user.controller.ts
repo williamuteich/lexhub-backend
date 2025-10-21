@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards, Patch, UploadedFile } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiNotFoundResponse, ApiParam, ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
-import { UploadAvatar } from 'src/common/decorators/upload-avatar.decorator';
+import { UploadAvatar } from 'src/common/decorators/upload-file.decorator';
 import { UserService } from './user.service';
 import { UserDto } from './dto/userDto';
 import { CreateUserDto } from './dto/user-create-dto';
@@ -30,7 +30,7 @@ export class UserController {
   @ApiQuery({ name: 'offset', required: false, example: 0, description: 'Offset of users to return' })
   @ApiOperation({ summary: 'Get all users', description: 'Returns all registered users' })
   @ApiOkResponse({ description: 'List of users', type: UserDto, isArray: true })
-  findAll(@Query() paginationDto: PaginationDto) {
+  findAll(@Query() paginationDto: PaginationDto): Promise<UserDto[]> {
     return this.userService.findAll(paginationDto);
   }
 
@@ -40,7 +40,7 @@ export class UserController {
   @ApiParam({ name: 'id', type: String, description: 'User ID', example: '68f01cf97f0e9eb12f558567' })
   @ApiOkResponse({ description: 'User found', type: UserDto })
   @ApiNotFoundResponse({ description: 'User not found' })
-  findOne(@Param('id') id: string, @TokenPayload() payloadTokenDto: PayloadTokenDto) {
+  findOne(@Param('id') id: string, @TokenPayload() payloadTokenDto: PayloadTokenDto): Promise<UserDto> {
     return this.userService.findOne(id, payloadTokenDto);
   }
 
@@ -50,7 +50,7 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: 'User successfully created', type: UserDto })
   @ApiBadRequestResponse({ description: 'Invalid data provided' })
-  create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto): Promise<{ message: string; user: UserDto }> {
     return this.userService.create(createUserDto);
   }
 
@@ -61,7 +61,7 @@ export class UserController {
   @ApiBody({ type: UpdateUserDto })
   @ApiOkResponse({ description: 'User successfully updated', type: UserDto })
   @ApiNotFoundResponse({ description: 'User not found' })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @TokenPayload() tokenPayload: PayloadTokenDto) {
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @TokenPayload() tokenPayload: PayloadTokenDto): Promise<{ message: string; user: UserDto }> {
     return this.userService.update(id, updateUserDto, tokenPayload);
   }
 
@@ -75,7 +75,7 @@ export class UserController {
     @Param('id') id: string,
     @UploadedFile(new FileValidationPipe(FILE_UPLOAD_CONSTRAINTS.ALLOWED_IMAGE_MIME_TYPES)) file: Express.Multer.File,
     @TokenPayload() tokenPayload: PayloadTokenDto,
-  ) {
+  ): Promise<{ message: string; user: UserDto }> {
     return this.userService.updateAvatar(id, file, tokenPayload);
   }
 
@@ -85,7 +85,7 @@ export class UserController {
   @ApiParam({ name: 'id', type: String, description: 'User ID', example: '68f01cf97f0e9eb12f558567' })
   @ApiOkResponse({ description: 'User successfully deleted' })
   @ApiNotFoundResponse({ description: 'User not found' })
-  delete(@Param('id') id: string, @TokenPayload() tokenPayload: PayloadTokenDto) {
+  delete(@Param('id') id: string, @TokenPayload() tokenPayload: PayloadTokenDto): Promise<{ message: string }> {
     return this.userService.delete(id, tokenPayload);
   }
 }

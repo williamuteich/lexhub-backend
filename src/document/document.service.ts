@@ -55,7 +55,7 @@ export class DocumentService {
     }
   }
 
-  async create(clientId: string, name: string, file: Express.Multer.File) {
+  async create(clientId: string, name: string, file: Express.Multer.File): Promise<{ message: string; document: DocumentDto }> {
     try {
       const clientExists = await this.prisma.client.findUnique({ 
         where: { id: clientId } 

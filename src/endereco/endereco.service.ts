@@ -66,7 +66,7 @@ export class EnderecoService {
       if (!clientExists) throw new HttpException('Client not found', HttpStatus.NOT_FOUND);
 
       const enderecoExists = await this.prisma.endereco.findFirst({ where: { clientId } });
-      if (enderecoExists) throw new HttpException('Client already has an address', HttpStatus.BAD_REQUEST);
+      if (enderecoExists) throw new HttpException('Client already has an address', HttpStatus.CONFLICT);
 
       const dadosCep = await this.viaCepService.buscarCep(createEnderecoDto.cep);
 
