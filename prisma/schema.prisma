@@ -145,7 +145,6 @@ model DocumentoProcesso {
   descricao   String?  
   tipo        String? 
   
-
   fileUrl     String
   fileKey     String
   fileSize    Int?

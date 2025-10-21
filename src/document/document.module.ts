@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { DocumentService } from './document.service';
 import { DocumentController } from './document.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { EntityExistsValidator } from 'src/common/validators/entity-exists.validator';
 
 @Module({
-  imports: [PrismaModule, StorageModule],
+  imports: [StorageModule],
   controllers: [DocumentController],
-  providers: [DocumentService],
+  providers: [DocumentService, EntityExistsValidator],
 })
 export class DocumentModule {}

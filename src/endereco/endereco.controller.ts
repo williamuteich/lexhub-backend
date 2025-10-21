@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { EnderecoService } from './endereco.service';
 import { CreateEnderecoDto } from './dto/create-endereco.dto';
 import { UpdateEnderecoDto } from './dto/update-endereco.dto';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
@@ -11,6 +11,7 @@ import { Role } from '@prisma/client';
 import { TokenPayload } from 'src/auth/decorator/token-payload.decorator';
 import { PayloadTokenDto } from 'src/auth/config/payload-token-dto';
 import { EnderecoDto } from './dto/endereco.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('endereco')
 @ApiTags('enderecos')
@@ -23,9 +24,11 @@ export class EnderecoController {
   @Get()
   @Roles(Role.ADMIN, Role.COLLABORATOR)
   @ApiOperation({ summary: 'Get all Enderecos', description: 'Returns all registered addresses' })
+  @ApiQuery({ name: 'limit', required: false, example: 10, description: 'Limit of enderecos to return' })
+  @ApiQuery({ name: 'offset', required: false, example: 0, description: 'Offset of enderecos to return' })
   @ApiOkResponse({ description: 'List of Enderecos', type: EnderecoDto, isArray: true })
-  findAll(): Promise<EnderecoDto[]> {
-    return this.enderecoService.findAll();
+  findAll(@Query() paginationDto: PaginationDto): Promise<EnderecoDto[]> {
+    return this.enderecoService.findAll(paginationDto);
   }
 
   @Get(':id')

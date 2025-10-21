@@ -4,12 +4,15 @@ import { UpdateProcessoDto } from './dto/update-processo.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ProcessoDto } from './dto/processo.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EntityExistsValidator } from 'src/common/validators/entity-exists.validator';
+import { MESSAGES } from 'src/common/constants/messages.constant';
 
 @Injectable()
 export class ProcessoService {
   constructor(
     private readonly prisma: PrismaService,
-  ){}
+    private readonly validator: EntityExistsValidator,
+  ) { }
 
   private readonly selectProcesso = {
     id: true,
@@ -26,164 +29,82 @@ export class ProcessoService {
   }
 
   async findAll(paginationDto: PaginationDto): Promise<{ message: string; processo: ProcessoDto[] }> {
-    try {
-      const { limit: take, offset: skip } = paginationDto;
+    const { limit: take, offset: skip } = paginationDto;
 
-      const processo = await this.prisma.processo.findMany({
-        take,
-        skip,
-        select: this.selectProcesso
-      });
+    const processo = await this.prisma.processo.findMany({
+      take,
+      skip,
+      select: this.selectProcesso
+    });
 
-      return { message: 'Processo successfully retrieved', processo };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      }
-
-      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return { message: MESSAGES.SUCCESS.RETRIEVED('Processos'), processo };
   }
 
   async findOne(id: string): Promise<{ message: string; processo: ProcessoDto }> {
-    try {
-      const processo = await this.prisma.processo.findUnique({
-        where: { id },
-        select: this.selectProcesso
-      });
+    const processo = await this.prisma.processo.findUnique({
+      where: { id },
+      select: this.selectProcesso
+    });
 
-      if (!processo) {
-        throw new HttpException('Processo not found', HttpStatus.NOT_FOUND);
-      }
-
-      return { message: 'Processo successfully retrieved', processo };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!processo) {
+      throw new HttpException(MESSAGES.NOT_FOUND.PROCESSO, HttpStatus.NOT_FOUND);
     }
+
+    return { message: MESSAGES.SUCCESS.RETRIEVED('Processo'), processo };
   }
   async create(createProcessoDto: CreateProcessoDto): Promise<{ message: string; processo: ProcessoDto }> {
-    try {
-      const { numeroProcesso, tipo, status, clientId, responsavelId, parteContraria } = createProcessoDto;
+    const { numeroProcesso, tipo, status, clientId, responsavelId, parteContraria } = createProcessoDto;
 
-      const existingProcesso = await this.prisma.processo.findUnique({
-        where: { numeroProcesso }
-      });
+    await this.validator.validateProcessoNumberNotInUse(numeroProcesso);
+    await this.validator.validateClientExists(clientId);
+    await this.validator.validateUserExists(responsavelId);
 
-      if (existingProcesso) {
-        throw new HttpException('Process number already exists', HttpStatus.CONFLICT);
-      }
+    const processo = await this.prisma.processo.create({
+      data: {
+        numeroProcesso,
+        tipo,
+        status: status || 'ATIVO',
+        clientId,
+        responsavelId,
+        parteContraria
+      },
+      select: this.selectProcesso
+    });
 
-      const clientExists = await this.prisma.client.findUnique({
-        where: { id: clientId }
-      });
-
-      if (!clientExists) {
-        throw new HttpException('Client not found', HttpStatus.NOT_FOUND);
-      }
-
-      const responsavelExists = await this.prisma.user.findUnique({
-        where: { id: responsavelId }
-      });
-
-      if (!responsavelExists) {
-        throw new HttpException('Responsible lawyer not found', HttpStatus.NOT_FOUND);
-      }
-
-      const processo = await this.prisma.processo.create({
-        data: {
-          numeroProcesso,
-          tipo,
-          status: status || 'ATIVO',
-          clientId,
-          responsavelId,
-          parteContraria
-        },
-        select: this.selectProcesso
-      });
-
-      return { message: 'Processo created successfully', processo };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to create processo', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return { message: MESSAGES.SUCCESS.CREATED('Processo'), processo };
   }
 
   async update(id: string, updateProcessoDto: UpdateProcessoDto): Promise<{ message: string; processo: ProcessoDto }> {
-    try {
-      const existingProcesso = await this.prisma.processo.findUnique({
-        where: { id }
-      });
+    await this.validator.validateProcessoExists(id);
 
-      if (!existingProcesso) {
-        throw new HttpException('Processo not found', HttpStatus.NOT_FOUND);
-      }
-
-      if (updateProcessoDto.numeroProcesso && updateProcessoDto.numeroProcesso !== existingProcesso.numeroProcesso) {
-        const duplicateProcesso = await this.prisma.processo.findUnique({
-          where: { numeroProcesso: updateProcessoDto.numeroProcesso }
-        });
-
-        if (duplicateProcesso) {
-          throw new HttpException('Process number already exists', HttpStatus.CONFLICT);
-        }
-      }
-
-      if (updateProcessoDto.clientId) {
-        const clientExists = await this.prisma.client.findUnique({
-          where: { id: updateProcessoDto.clientId }
-        });
-
-        if (!clientExists) {
-          throw new HttpException('Client not found', HttpStatus.NOT_FOUND);
-        }
-      }
-
-      if (updateProcessoDto.responsavelId) {
-        const responsavelExists = await this.prisma.user.findUnique({
-          where: { id: updateProcessoDto.responsavelId }
-        });
-
-        if (!responsavelExists) {
-          throw new HttpException('Responsible lawyer not found', HttpStatus.NOT_FOUND);
-        }
-      }
-
-      const processo = await this.prisma.processo.update({
-        where: { id },
-        data: updateProcessoDto,
-        select: this.selectProcesso
-      });
-
-      return { message: 'Processo updated successfully', processo };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to update processo', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (updateProcessoDto.numeroProcesso) {
+      await this.validator.validateProcessoNumberNotInUse(updateProcessoDto.numeroProcesso, id);
     }
+
+    if (updateProcessoDto.clientId) {
+      await this.validator.validateClientExists(updateProcessoDto.clientId);
+    }
+
+    if (updateProcessoDto.responsavelId) {
+      await this.validator.validateUserExists(updateProcessoDto.responsavelId);
+    }
+
+    const processo = await this.prisma.processo.update({
+      where: { id },
+      data: updateProcessoDto,
+      select: this.selectProcesso
+    });
+
+    return { message: MESSAGES.SUCCESS.UPDATED('Processo'), processo };
   }
 
   async remove(id: string): Promise<{ message: string }> {
-    try {
-      const existingProcesso = await this.prisma.processo.findUnique({
-        where: { id }
-      });
+    await this.validator.validateProcessoExists(id);
 
-      if (!existingProcesso) {
-        throw new HttpException('Processo not found', HttpStatus.NOT_FOUND);
-      }
+    await this.prisma.processo.delete({
+      where: { id }
+    });
 
-      await this.prisma.processo.delete({
-        where: { id }
-      });
-
-      return { message: 'Processo deleted successfully' };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to delete processo', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return { message: MESSAGES.SUCCESS.DELETED('Processo') };
   }
 }

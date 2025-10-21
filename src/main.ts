@@ -2,16 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  //Configurar depois o cors
   app.enableCors();
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
   }));
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Cats example')

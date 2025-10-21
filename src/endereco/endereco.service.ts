@@ -6,6 +6,9 @@ import { PayloadTokenDto } from 'src/auth/config/payload-token-dto';
 import { Role } from '@prisma/client';
 import { EnderecoDto } from './dto/endereco.dto';
 import { ViaCepService } from 'src/viacep/viacep.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { EntityExistsValidator } from 'src/common/validators/entity-exists.validator';
+import { MESSAGES } from 'src/common/constants/messages.constant';
 
 @Injectable()
 export class EnderecoService {
@@ -25,114 +28,90 @@ export class EnderecoService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly viaCepService: ViaCepService
+    private readonly viaCepService: ViaCepService,
+    private readonly validator: EntityExistsValidator,
   ) {}
 
-  async findAll(): Promise<EnderecoDto[]> {
-    try {
-      return await this.prisma.endereco.findMany({
-        select: this.enderecoSelect,
-      });
-    } catch (error) {
-      console.error(error);
-      throw new HttpException('Failed to fetch enderecos', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async findAll(paginationDto?: PaginationDto): Promise<EnderecoDto[]> {
+    const { limit: take, offset: skip } = paginationDto || { limit: 100, offset: 0 };
+    
+    return await this.prisma.endereco.findMany({
+      take,
+      skip,
+      select: this.enderecoSelect,
+    });
   }
 
   async findOne(id: string, payloadTokenDto: PayloadTokenDto): Promise<EnderecoDto> {
-    try {
-      const endereco = await this.prisma.endereco.findUnique({
-        where: { id },
-        select: this.enderecoSelect,
-      });
+    const endereco = await this.prisma.endereco.findUnique({
+      where: { id },
+      select: this.enderecoSelect,
+    });
 
-      if (!endereco) throw new HttpException('Endereco not found', HttpStatus.NOT_FOUND);
+    if (!endereco) throw new HttpException(MESSAGES.NOT_FOUND.ENDERECO, HttpStatus.NOT_FOUND);
 
-      if (payloadTokenDto.role !== Role.ADMIN && payloadTokenDto.role !== Role.COLLABORATOR && payloadTokenDto.sub !== endereco.clientId) {
-        throw new HttpException('You can only view your own address', HttpStatus.FORBIDDEN);
-      }
-
-      return endereco;
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to fetch endereco', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (payloadTokenDto.role !== Role.ADMIN && payloadTokenDto.role !== Role.COLLABORATOR && payloadTokenDto.sub !== endereco.clientId) {
+      throw new HttpException(MESSAGES.FORBIDDEN.VIEW_OWN_ADDRESS, HttpStatus.FORBIDDEN);
     }
+
+    return endereco;
   }
 
   async create(clientId: string, createEnderecoDto: CreateEnderecoDto): Promise<{ message: string; endereco: EnderecoDto }> {
-    try {
-      const clientExists = await this.prisma.client.findUnique({ where: { id: clientId } });
-      if (!clientExists) throw new HttpException('Client not found', HttpStatus.NOT_FOUND);
+    await this.validator.validateClientExists(clientId);
 
-      const enderecoExists = await this.prisma.endereco.findFirst({ where: { clientId } });
-      if (enderecoExists) throw new HttpException('Client already has an address', HttpStatus.CONFLICT);
+    const enderecoExists = await this.prisma.endereco.findFirst({ where: { clientId } });
+    if (enderecoExists) throw new HttpException(MESSAGES.CONFLICT.ADDRESS_EXISTS, HttpStatus.CONFLICT);
 
-      const dadosCep = await this.viaCepService.buscarCep(createEnderecoDto.cep);
+    const dadosCep = await this.viaCepService.buscarCep(createEnderecoDto.cep);
 
-      const endereco = await this.prisma.endereco.create({
-        data: {
-          clientId,
-          cep: createEnderecoDto.cep,
-          numero: createEnderecoDto.numero,
-          complemento: createEnderecoDto.complemento,
-          ...dadosCep,
-        },
-        select: this.enderecoSelect,
-      });
+    const endereco = await this.prisma.endereco.create({
+      data: {
+        clientId,
+        cep: createEnderecoDto.cep,
+        numero: createEnderecoDto.numero,
+        complemento: createEnderecoDto.complemento,
+        ...dadosCep,
+      },
+      select: this.enderecoSelect,
+    });
 
-      return { message: 'Endereco created successfully', endereco };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to create endereco', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return { message: MESSAGES.SUCCESS.CREATED('Endereco'), endereco };
   }
 
   async update(id: string, updateEnderecoDto: UpdateEnderecoDto, payloadTokenDto: PayloadTokenDto): Promise<{ message: string; endereco: EnderecoDto }> {
-    try {
-      const endereco = await this.prisma.endereco.findUnique({ where: { id } });
-      if (!endereco) throw new HttpException('Endereco not found', HttpStatus.NOT_FOUND);
+    const endereco = await this.prisma.endereco.findUnique({ where: { id } });
+    if (!endereco) throw new HttpException(MESSAGES.NOT_FOUND.ENDERECO, HttpStatus.NOT_FOUND);
 
-      const hasRole = payloadTokenDto.role === Role.ADMIN || payloadTokenDto.role === Role.COLLABORATOR;
-      const isOwner = payloadTokenDto.sub === endereco.clientId;
+    const hasRole = payloadTokenDto.role === Role.ADMIN || payloadTokenDto.role === Role.COLLABORATOR;
+    const isOwner = payloadTokenDto.sub === endereco.clientId;
 
-      if (!hasRole && !isOwner) {
-        throw new HttpException('You can only update your own address', HttpStatus.FORBIDDEN);
-      }
-
-      let dataToUpdate = { ...updateEnderecoDto };
-
-      if (updateEnderecoDto.cep) {
-        const dadosCep = await this.viaCepService.buscarCep(updateEnderecoDto.cep);
-        dataToUpdate = { ...dataToUpdate, ...dadosCep };
-      }
-
-      const updatedEndereco = await this.prisma.endereco.update({
-        where: { id },
-        data: dataToUpdate,
-        select: this.enderecoSelect,
-      });
-
-      return { message: 'Endereco updated successfully', endereco: updatedEndereco };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to update endereco', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!hasRole && !isOwner) {
+      throw new HttpException(MESSAGES.FORBIDDEN.UPDATE_OWN_ADDRESS, HttpStatus.FORBIDDEN);
     }
+
+    let dataToUpdate = { ...updateEnderecoDto };
+
+    if (updateEnderecoDto.cep) {
+      const dadosCep = await this.viaCepService.buscarCep(updateEnderecoDto.cep);
+      dataToUpdate = { ...dataToUpdate, ...dadosCep };
+    }
+
+    const updatedEndereco = await this.prisma.endereco.update({
+      where: { id },
+      data: dataToUpdate,
+      select: this.enderecoSelect,
+    });
+
+    return { message: MESSAGES.SUCCESS.UPDATED('Endereco'), endereco: updatedEndereco };
   }
 
   async remove(id: string): Promise<{ message: string }> {
-    try {
-      const endereco = await this.prisma.endereco.findUnique({ where: { id } });
-      if (!endereco) throw new HttpException('Endereco not found', HttpStatus.NOT_FOUND);
+    const endereco = await this.prisma.endereco.findUnique({ where: { id } });
+    if (!endereco) throw new HttpException(MESSAGES.NOT_FOUND.ENDERECO, HttpStatus.NOT_FOUND);
 
-      await this.prisma.endereco.delete({ where: { id } });
-      return { message: 'Endereco deleted successfully' };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.error(error);
-      throw new HttpException('Failed to delete endereco', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.prisma.endereco.delete({ where: { id } });
+    
+    return { message: MESSAGES.SUCCESS.DELETED('Endereco') };
   }
 }

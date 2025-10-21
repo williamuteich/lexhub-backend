@@ -16,6 +16,8 @@ import { ProcessoModule } from 'src/processo/processo.module';
 @Module({
   imports: [
     ConfigModule.forRoot(), 
+    PrismaModule,
+    AuthModule,
     UserModule, 
     ClientModule,
     StorageModule,
@@ -27,8 +29,6 @@ import { ProcessoModule } from 'src/processo/processo.module';
       { name: 'medium', ttl: 10000, limit: 30 },
       { name: 'long', ttl: 60000, limit: 105 },
     ]),
-    PrismaModule,
-    AuthModule,
   ],
   controllers: [AppController],
   providers: [

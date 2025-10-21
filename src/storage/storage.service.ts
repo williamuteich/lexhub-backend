@@ -12,7 +12,7 @@ export class StorageService {
   private publicUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.bucketName = 'lexhub';
+    this.bucketName = this.configService.get<string>('R2_BUCKET_NAME') || 'lexhub';
     
     const endpoint = this.configService.get<string>('R2_ENDPOINT');
     const accessKeyId = this.configService.get<string>('R2_ACCESS_KEY_ID');
@@ -38,42 +38,32 @@ export class StorageService {
     file: Express.Multer.File,
     folder: string = FILE_UPLOAD_CONSTRAINTS.DEFAULT_FOLDER,
   ): Promise<UploadResponseDto> {
-    try {
-      const fileExtension = file.originalname.split('.').pop();
-      const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
+    const fileExtension = file.originalname.split('.').pop();
+    const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
 
-      const command = new PutObjectCommand({
-        Bucket: this.bucketName,
-        Key: fileName,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      });
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: fileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    });
 
-      await this.s3Client.send(command);
+    await this.s3Client.send(command);
 
-      return {
-        url: `${this.publicUrl}/${fileName}`,
-        key: fileName,
-        bucket: this.bucketName,
-      };
-    } catch (error) {
-      console.error('Upload error:', error);
-      throw new HttpException('Failed to upload file', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    return {
+      url: `${this.publicUrl}/${fileName}`,
+      key: fileName,
+      bucket: this.bucketName,
+    };
   }
 
   async deleteFile(key: string): Promise<void> {
-    try {
-      const command = new DeleteObjectCommand({
-        Bucket: this.bucketName,
-        Key: key,
-      });
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
 
-      await this.s3Client.send(command);
-    } catch (error) {
-      console.error('Delete error:', error);
-      throw new HttpException('Failed to delete file', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    await this.s3Client.send(command);
   }
 
   extractKeyFromUrl(url: string): string | null {
