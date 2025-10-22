@@ -62,6 +62,7 @@ model Client {
   password  String
   cpf       String   @unique
   phone     String
+  firstAcess Boolean @default(false)
   birthDate String
   sex       String
   role      Role     @default(CLIENT)
@@ -71,8 +72,21 @@ model Client {
   document  Document[]
   processos Processo[] @relation("ClienteProcessos")
 
+  firstAcessAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([email])
+  @@index([expiresAt])
 }
 
 model Endereco {

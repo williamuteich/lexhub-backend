@@ -16,8 +16,8 @@ import { UpdateUserDto } from './dto/user-update-dto';
 import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
 import { FILE_UPLOAD_CONSTRAINTS } from 'src/storage/constants/file-upload.constants';
 
-@Controller('users')
-@ApiTags('users')
+@Controller('user')
+@ApiTags('user')
 @LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @ApiBearerAuth()

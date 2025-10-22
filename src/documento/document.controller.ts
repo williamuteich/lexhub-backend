@@ -12,7 +12,8 @@ import {
   ApiOkResponse, 
   ApiParam, 
   ApiCreatedResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
+  ApiBody
 } from '@nestjs/swagger';
 import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -20,6 +21,7 @@ import { Role } from 'generated/prisma';
 import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
 import { UploadFile } from 'src/common/decorators/upload-file.decorator';
 import { DocumentDto } from './dto/document.dto';
+import { CreateDocumentDto } from './dto/create-document.dto';
 
 @Controller('document')
 @ApiTags('document')
@@ -40,25 +42,24 @@ export class DocumentController {
   }
 
   @Post(':clientId')
-  @UploadFile()
+  @UploadFile({
+    name: { type: 'string', description: 'Document name/title', example: 'RG' },
+  })
   @ApiOperation({ summary: 'Upload a document for a client', description: 'Upload a document file to R2 and save metadata' })
   @ApiParam({ name: 'clientId', type: String, description: 'Client ID', example: '507f1f77bcf86cd799439011' })
   @ApiCreatedResponse({ description: 'Document successfully created' })
   async create(
     @Param('clientId') clientId: string,
-    @Body() body: { name: string },
+    @Body() body: CreateDocumentDto,
     @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
   ) {
-    if (!body.name) {
-      throw new HttpException('Document name is required', HttpStatus.BAD_REQUEST);
-    }
-
     return this.documentService.create(clientId, body.name, file);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a document by ID' })
   @ApiParam({ name: 'id', type: String, description: 'Document ID', example: '507f1f77bcf86cd799439011' })
+  @ApiBody({ type: UpdateDocumentDto })
   @ApiOkResponse({ description: 'Document updated successfully' })
   @ApiNotFoundResponse({ description: 'Document not found' })
   update(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto): Promise<{ message: string; document: DocumentDto }> {

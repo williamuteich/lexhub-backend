@@ -14,7 +14,7 @@ export class ProcessoService {
     private readonly validator: EntityExistsValidator,
   ) { }
 
-  private readonly selectProcesso = {
+  private readonly selectProcessoBasic = {
     id: true,
     numeroProcesso: true,
     tipo: true,
@@ -26,7 +26,47 @@ export class ProcessoService {
     parteContraria: true,
     createdAt: true,
     updatedAt: true,
-  }
+  };
+
+  private readonly selectProcessoFull = {
+    id: true,
+    numeroProcesso: true,
+    tipo: true,
+    status: true,
+    dataAbertura: true,
+    dataEncerramento: true,
+    clientId: true,
+    responsavelId: true,
+    parteContraria: true,
+    client: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        cpf: true,
+        phone: true,
+      }
+    },
+    responsavel: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        oab: true,
+      }
+    },
+    documentos: {
+      select: {
+        id: true,
+        nome: true,
+        tipo: true,
+        fileUrl: true,
+        createdAt: true,
+      }
+    },
+    createdAt: true,
+    updatedAt: true,
+  };
 
   async findAll(paginationDto: PaginationDto): Promise<{ message: string; processo: ProcessoDto[] }> {
     const { limit: take, offset: skip } = paginationDto;
@@ -34,7 +74,7 @@ export class ProcessoService {
     const processo = await this.prisma.processo.findMany({
       take,
       skip,
-      select: this.selectProcesso
+      select: this.selectProcessoBasic
     });
 
     return { message: MESSAGES.SUCCESS.RETRIEVED('Processos'), processo };
@@ -43,7 +83,7 @@ export class ProcessoService {
   async findOne(id: string): Promise<{ message: string; processo: ProcessoDto }> {
     const processo = await this.prisma.processo.findUnique({
       where: { id },
-      select: this.selectProcesso
+      select: this.selectProcessoFull
     });
 
     if (!processo) {
@@ -68,7 +108,7 @@ export class ProcessoService {
         responsavelId,
         parteContraria
       },
-      select: this.selectProcesso
+      select: this.selectProcessoBasic
     });
 
     return { message: MESSAGES.SUCCESS.CREATED('Processo'), processo };
@@ -92,7 +132,7 @@ export class ProcessoService {
     const processo = await this.prisma.processo.update({
       where: { id },
       data: updateProcessoDto,
-      select: this.selectProcesso
+      select: this.selectProcessoBasic
     });
 
     return { message: MESSAGES.SUCCESS.UPDATED('Processo'), processo };

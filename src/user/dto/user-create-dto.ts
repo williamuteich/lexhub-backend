@@ -24,10 +24,19 @@ export class CreateUserDto {
     @IsOptional()
     avatar?: string;
 
+    @ApiPropertyOptional({ 
+        enum: Role, 
+        example: Role.COLLABORATOR,
+        description: 'User role'
+    })
     @IsEnum(Role)
     @IsOptional()
     role?: Role;
 
+    @ApiPropertyOptional({ 
+        example: true,
+        description: 'User active status'
+    })
     @IsBoolean()
     @IsOptional()
     isActive?: boolean;

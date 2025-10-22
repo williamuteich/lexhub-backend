@@ -13,7 +13,7 @@ import { MESSAGES } from 'src/common/constants/messages.constant';
 
 @Injectable()
 export class ClientService {
-  private readonly clientSelect = {
+  private readonly clientSelectBasic = {
     id: true,
     name: true,
     email: true,
@@ -23,9 +23,34 @@ export class ClientService {
     birthDate: true,
     sex: true,
     role: true,
+    status: true,
+    createdAt: true,
+    updatedAt: true,
+  };
+
+  private readonly clientSelectFull = {
+    id: true,
+    name: true,
+    email: true,
+    avatar: true,
+    cpf: true,
+    phone: true,
+    birthDate: true,
+    sex: true,
+    role: true,
+    status: true,
     endereco: true,
     document: true,
-    status: true,
+    processos: {
+      select: {
+        id: true,
+        numeroProcesso: true,
+        tipo: true,
+        status: true,
+        dataAbertura: true,
+        responsavelId: true,
+      }
+    },
     createdAt: true,
     updatedAt: true,
   };
@@ -42,14 +67,14 @@ export class ClientService {
     return await this.prisma.client.findMany({
       take: limit,
       skip: offset,
-      select: this.clientSelect
+      select: this.clientSelectBasic
     });
   }
 
   async findOne(id: string, payloadTokenDto: PayloadTokenDto): Promise<ClientDto> {
     const client = await this.prisma.client.findUnique({
       where: { id },
-      select: this.clientSelect
+      select: this.clientSelectFull
     });
 
     if (!client) throw new HttpException(MESSAGES.NOT_FOUND.CLIENT, HttpStatus.NOT_FOUND);
@@ -66,7 +91,7 @@ export class ClientService {
 
     const client = await this.prisma.client.create({
       data: createClientDto,
-      select: this.clientSelect
+      select: this.clientSelectBasic
     });
 
     return { message: MESSAGES.SUCCESS.CREATED('Client'), client };
@@ -89,7 +114,7 @@ export class ClientService {
     const client = await this.prisma.client.update({
       where: { id },
       data: updatedData,
-      select: this.clientSelect
+      select: this.clientSelectBasic
     });
 
     return { message: MESSAGES.SUCCESS.UPDATED('Client'), client };
@@ -113,7 +138,7 @@ export class ClientService {
     const client = await this.prisma.client.update({
       where: { id },
       data: { avatar: uploadResult.url },
-      select: this.clientSelect,
+      select: this.clientSelectBasic,
     });
 
     return { message: MESSAGES.SUCCESS.UPDATED('Avatar'), client };

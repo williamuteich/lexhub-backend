@@ -10,8 +10,11 @@ import { AuthModule } from 'src/auth/auth.module';
 import { StorageModule } from 'src/storage/storage.module';
 import { ClientModule } from 'src/client/client.module';
 import { EnderecoModule } from 'src/endereco/endereco.module';
-import { DocumentModule } from 'src/document/document.module';
+import { DocumentModule } from 'src/documento/document.module';
 import { ProcessoModule } from 'src/processo/processo.module';
+import { DocumentoProcessoModule } from 'src/documento-processo/documento-processo.module';
+import { EmailModule } from 'src/email/email.module';
+import { PasswordResetModule } from 'src/password-reset/password-reset.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { ProcessoModule } from 'src/processo/processo.module';
     EnderecoModule,
     DocumentModule,
     ProcessoModule,
+    DocumentoProcessoModule,
+    EmailModule,
+    PasswordResetModule,
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1000, limit: 3 },
       { name: 'medium', ttl: 10000, limit: 30 },

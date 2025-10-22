@@ -36,10 +36,20 @@ export const MESSAGES = {
   UNAUTHORIZED: {
     INVALID_CREDENTIALS: 'Invalid email or password',
   },
+
+  PASSWORD_RESET: {
+    EMAIL_SENT: 'If the email exists, a reset link has been sent',
+    SUCCESS: 'Password reset successfully',
+    INVALID_TOKEN: 'Invalid or expired reset token',
+    TOKEN_USED: 'This reset token has already been used',
+    TOKEN_EXPIRED: 'This reset token has expired',
+  },
+
   INTERNAL_ERROR: {
     FETCH_FAILED: (entity: string) => `Failed to fetch ${entity}`,
     CREATE_FAILED: (entity: string) => `Failed to create ${entity}`,
     UPDATE_FAILED: (entity: string) => `Failed to update ${entity}`,
     DELETE_FAILED: (entity: string) => `Failed to delete ${entity}`,
+    EMAIL_SEND_FAILED: 'Failed to send email',
   },
 } as const;

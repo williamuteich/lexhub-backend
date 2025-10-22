@@ -13,13 +13,33 @@ import { MESSAGES } from 'src/common/constants/messages.constant';
 
 @Injectable()
 export class UserService {
-  private readonly userSelect = {
+  private readonly userSelectBasic = {
     id: true,
     name: true,
     email: true,
     avatar: true,
     status: true,
     role: true,
+    createdAt: true,
+    updatedAt: true,
+  };
+
+  private readonly userSelectFull = {
+    id: true,
+    name: true,
+    email: true,
+    avatar: true,
+    status: true,
+    role: true,
+    processos: {
+      select: {
+        id: true,
+        numeroProcesso: true,
+        tipo: true,
+        status: true,
+        dataAbertura: true,
+      }
+    },
     createdAt: true,
     updatedAt: true,
   };
@@ -34,7 +54,7 @@ export class UserService {
   async findAll(paginationDto: PaginationDto): Promise<UserDto[]> {
     const { limit, offset } = paginationDto;
     return await this.prisma.user.findMany({
-      select: this.userSelect,
+      select: this.userSelectBasic,
       take: limit,
       skip: offset,
     });
@@ -43,7 +63,7 @@ export class UserService {
   async findOne(id: string, payloadTokenDto: PayloadTokenDto): Promise<UserDto> {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: this.userSelect,
+      select: this.userSelectFull,
     });
 
     if (!user) throw new HttpException(MESSAGES.NOT_FOUND.USER, HttpStatus.NOT_FOUND);
@@ -70,7 +90,7 @@ export class UserService {
         avatar,
         role: role || 'COLLABORATOR',
       },
-      select: this.userSelect,
+      select: this.userSelectBasic,
     });
 
     return { message: MESSAGES.SUCCESS.CREATED('User'), user };
@@ -105,7 +125,7 @@ export class UserService {
     const user = await this.prisma.user.update({
       where: { id },
       data: updatedData,
-      select: this.userSelect,
+      select: this.userSelectBasic,
     });
 
     return { message: MESSAGES.SUCCESS.UPDATED('User'), user };
@@ -119,14 +139,12 @@ export class UserService {
     await this.validator.validateUserExists(id);
     const existingUser = await this.prisma.user.findUnique({ where: { id } });
 
-    // Try/catch aqui porque precisamos fazer cleanup do arquivo antigo
     try {
       if (existingUser?.avatar) {
         const oldKey = this.storageService.extractKeyFromUrl(existingUser.avatar);
         if (oldKey) await this.storageService.deleteFile(oldKey);
       }
     } catch (error) {
-      // Falha ao deletar arquivo antigo não deve impedir o upload do novo
       console.warn('Failed to delete old avatar:', error);
     }
 
@@ -135,7 +153,7 @@ export class UserService {
     const user = await this.prisma.user.update({
       where: { id },
       data: { avatar: uploadResult.url },
-      select: this.userSelect,
+      select: this.userSelectBasic,
     });
 
     return { message: MESSAGES.SUCCESS.UPDATED('Avatar'), user };
