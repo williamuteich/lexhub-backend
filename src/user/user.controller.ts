@@ -68,7 +68,10 @@ export class UserController {
   @Patch(':id/avatar')
   @Roles(Role.ADMIN, Role.COLLABORATOR)
   @UploadAvatar()
-  @ApiOperation({ summary: 'Upload user avatar', description: 'Upload avatar image to R2 and update user profile' })
+  @ApiOperation({ 
+    summary: 'Upload user avatar', 
+    description: 'Upload avatar image to R2 and update user profile. Send as multipart/form-data with key "file" for the image file.' 
+  })
   @ApiParam({ name: 'id', type: String, description: 'User ID', example: '68f01cf97f0e9eb12f558567' })
   @ApiOkResponse({ description: 'Avatar successfully updated', type: UserDto })
   async uploadAvatar(

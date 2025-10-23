@@ -56,7 +56,10 @@ export class DocumentoProcessoController {
     descricao: { type: 'string', description: 'Descrição do documento', example: 'Petição inicial do processo', required: false },
     tipo: { type: 'string', enum: ['PETICAO', 'SENTENCA', 'DESPACHO', 'CONTRATO', 'PROCURACAO', 'OUTRO'], description: 'Tipo do documento', example: 'PETICAO', required: false },
   })
-  @ApiOperation({ summary: 'Upload a documento for a processo', description: 'Upload a documento file to R2 and save metadata' })
+  @ApiOperation({ 
+    summary: 'Upload a documento for a processo', 
+    description: 'Upload a documento file to R2 and save metadata. Send as multipart/form-data with key "file" for the file and other fields as form fields.' 
+  })
   @ApiParam({ name: 'processoId', type: String, description: 'Processo ID', example: '507f1f77bcf86cd799439011' })
   @ApiCreatedResponse({ description: 'Documento successfully created', type: DocumentoProcessoDto })
   @ApiNotFoundResponse({ description: 'Processo not found' })

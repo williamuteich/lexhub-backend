@@ -54,7 +54,10 @@ export class DocumentController {
   @UploadFile({
     name: { type: 'string', description: 'Document name/title', example: 'RG' },
   })
-  @ApiOperation({ summary: 'Upload a document for a client', description: 'Upload a document file to R2 and save metadata' })
+  @ApiOperation({ 
+    summary: 'Upload a document for a client', 
+    description: 'Upload a document file to R2 and save metadata. Send as multipart/form-data with key "file" for the file and other fields as form fields.' 
+  })
   @ApiParam({ name: 'clientId', type: String, description: 'Client ID', example: '507f1f77bcf86cd799439011' })
   @ApiCreatedResponse({ description: 'Document successfully created' })
   async create(

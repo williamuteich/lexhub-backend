@@ -65,7 +65,10 @@ export class ClientController {
   @Patch(':id/avatar')
   @Roles(Role.ADMIN, Role.COLLABORATOR)
   @UploadAvatar()
-  @ApiOperation({ summary: 'Upload client avatar', description: 'Upload avatar image to R2 and update client profile' })
+  @ApiOperation({ 
+    summary: 'Upload client avatar', 
+    description: 'Upload avatar image to R2 and update client profile. Send as multipart/form-data with key "file" for the image file.' 
+  })
   @ApiParam({ name: 'id', type: String, description: 'Client ID', example: '68f01cf97f0e9eb12f558567' })
   @ApiOkResponse({ description: 'Avatar successfully updated', type: ClientDto })
   async uploadAvatar(

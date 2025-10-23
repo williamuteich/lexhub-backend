@@ -77,7 +77,10 @@ export class ClientBoletoController {
     observacao: { type: 'string', description: 'Observação', example: 'Referente a outubro/2025', required: false },
     dataVencimento: { type: 'string', description: 'Data de vencimento', example: '2025-10-25T00:00:00.000Z' },
   })
-  @ApiOperation({ summary: 'Upload a boleto for a client', description: 'Upload a boleto file to R2 and save metadata' })
+  @ApiOperation({ 
+    summary: 'Upload a boleto for a client', 
+    description: 'Upload a boleto file to R2 and save metadata. Send as multipart/form-data with key "file" for the file and other fields as form fields.' 
+  })
   @ApiParam({ name: 'clientId', type: String, description: 'Client ID', example: '507f1f77bcf86cd799439011' })
   @ApiCreatedResponse({ description: 'Boleto successfully created', type: BoletoDto })
   @ApiNotFoundResponse({ description: 'Client not found' })
