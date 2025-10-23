@@ -15,6 +15,7 @@ export const MESSAGES = {
     ENDERECO: 'Endereco not found',
     DOCUMENTO_PROCESSO: 'Documento do processo not found',
     AGENDAMENTO: 'Agendamento not found',
+    BOLETO: 'Boleto not found',
   },
 
   CONFLICT: {

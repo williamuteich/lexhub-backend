@@ -193,7 +193,7 @@ model Boleto {
   titulo         String
   observacao     String?
   status         Boolean  @default(true)
-  DataVencimento DateTime
+  dataVencimento DateTime
 
   fileUrl  String
   fileKey  String
@@ -204,4 +204,5 @@ model Boleto {
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
+  @@index([dataVencimento])
 }
