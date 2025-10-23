@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -37,44 +31,45 @@ enum TipoProcesso {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  avatar    String?
-  role      Role     @default(COLLABORATOR)
-  password  String
-  status    Boolean  @default(true)
-  
-  oab       String?
-  ufOab     String?
-  
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String  @unique
+  avatar   String?
+  role     Role    @default(COLLABORATOR)
+  password String
+  status   Boolean @default(true)
+
+  oab   String?
+  ufOab String?
+
   processos Processo[] @relation("AdvogadoProcessos")
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Client {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  avatar    String?
-  password  String
-  cpf       String   @unique
-  phone     String
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String  @unique
+  avatar     String?
+  password   String
+  cpf        String  @unique
+  phone      String
   firstAcess Boolean @default(false)
-  birthDate String
-  sex       String
-  role      Role     @default(CLIENT)
-  status    Boolean  @default(true)
+  birthDate  String
+  sex        String
+  role       Role    @default(CLIENT)
+  status     Boolean @default(true)
 
-  endereco  Endereco[]
-  document  Document[]
-  processos Processo[] @relation("ClienteProcessos")
+  endereco     Endereco[]
+  document     Document[]
+  processos    Processo[]    @relation("ClienteProcessos")
+  agendamentos Agendamento[]
 
   firstAcessAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model PasswordResetToken {
@@ -84,7 +79,7 @@ model PasswordResetToken {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
-  
+
   @@index([email])
   @@index([expiresAt])
 }
@@ -108,66 +103,83 @@ model Endereco {
 }
 
 model Document {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId    String   @db.ObjectId
-  name        String
-  fileUrl     String
-  fileKey     String
-  fileSize    Int?
-  mimeType    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  String   @db.ObjectId
+  name      String
+  fileUrl   String
+  fileKey   String
+  fileSize  Int?
+  mimeType  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clientId])
 }
 
 model Processo {
-  id               String         @id @default(auto()) @map("_id") @db.ObjectId
-  numeroProcesso   Int            @unique
-  tipo             TipoProcesso   @default(CIVEL)
-  status           ProcessoStatus @default(ATIVO)
-  
-  dataAbertura     DateTime       @default(now())
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  numeroProcesso Int            @unique
+  tipo           TipoProcesso   @default(CIVEL)
+  status         ProcessoStatus @default(ATIVO)
+
+  dataAbertura     DateTime  @default(now())
   dataEncerramento DateTime?
-  
-  client           Client         @relation("ClienteProcessos", fields: [clientId], references: [id], onDelete: Cascade)
-  clientId         String         @db.ObjectId
 
-  responsavel      User           @relation("AdvogadoProcessos", fields: [responsavelId], references: [id], onDelete: Cascade)
-  responsavelId    String         @db.ObjectId
-  
-  parteContraria   String
-  
-  documentos       DocumentoProcesso[]
+  client   Client @relation("ClienteProcessos", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String @db.ObjectId
 
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  
+  responsavel   User   @relation("AdvogadoProcessos", fields: [responsavelId], references: [id], onDelete: Cascade)
+  responsavelId String @db.ObjectId
+
+  parteContraria String
+
+  documentos DocumentoProcesso[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([clientId])
   @@index([responsavelId])
   @@index([status])
 }
 
-
 model DocumentoProcesso {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  processo   Processo @relation(fields: [processoId], references: [id], onDelete: Cascade)
+  processoId String   @db.ObjectId
+
+  nome      String
+  descricao String?
+  tipo      String?
+
+  fileUrl  String
+  fileKey  String
+  fileSize Int?
+  mimeType String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([processoId])
+  @@index([tipo])
+}
+
+model Agendamento {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  processo    Processo @relation(fields: [processoId], references: [id], onDelete: Cascade)
-  processoId  String   @db.ObjectId
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String   @db.ObjectId
   
-  nome        String   
-  descricao   String?  
-  tipo        String? 
-  
-  fileUrl     String
-  fileKey     String
-  fileSize    Int?
-  mimeType    String?
+  titulo      String
+  descricao   String?
+  dataHora    DateTime
+  local       String?
+  link        String?
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@index([processoId])
-  @@index([tipo])
+  @@index([clientId])
+  @@index([dataHora])
+
 }
-  

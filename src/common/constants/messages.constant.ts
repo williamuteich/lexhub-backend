@@ -14,6 +14,7 @@ export const MESSAGES = {
     DOCUMENT: 'Document not found',
     ENDERECO: 'Endereco not found',
     DOCUMENTO_PROCESSO: 'Documento do processo not found',
+    AGENDAMENTO: 'Agendamento not found',
   },
 
   CONFLICT: {
@@ -21,6 +22,7 @@ export const MESSAGES = {
     CLIENT_EXISTS: 'Client already exists',
     PROCESSO_NUMBER_EXISTS: 'Process number already exists',
     ADDRESS_EXISTS: 'Client already has an address',
+    AGENDAMENTO_EXISTS: 'Agendamento already exists for this date and time'
   },
 
   FORBIDDEN: {

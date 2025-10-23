@@ -15,6 +15,7 @@ import { ProcessoModule } from 'src/processo/processo.module';
 import { DocumentoProcessoModule } from 'src/documento-processo/documento-processo.module';
 import { EmailModule } from 'src/email/email.module';
 import { PasswordResetModule } from 'src/password-reset/password-reset.module';
+import { AgendamentoModule } from 'src/agendamento/agendamento.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PasswordResetModule } from 'src/password-reset/password-reset.module';
     DocumentoProcessoModule,
     EmailModule,
     PasswordResetModule,
+    AgendamentoModule,
     ThrottlerModule.forRoot([
       { name: 'short', ttl: 1000, limit: 3 },
       { name: 'medium', ttl: 10000, limit: 30 },
