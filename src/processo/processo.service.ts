@@ -19,6 +19,7 @@ export class ProcessoService {
     numeroProcesso: true,
     tipo: true,
     status: true,
+    tribunal: true,
     dataAbertura: true,
     dataEncerramento: true,
     clientId: true,
@@ -33,6 +34,7 @@ export class ProcessoService {
     numeroProcesso: true,
     tipo: true,
     status: true,
+    tribunal: true,
     dataAbertura: true,
     dataEncerramento: true,
     clientId: true,
@@ -93,7 +95,7 @@ export class ProcessoService {
     return { message: MESSAGES.SUCCESS.RETRIEVED('Processo'), processo };
   }
   async create(createProcessoDto: CreateProcessoDto): Promise<{ message: string; processo: ProcessoDto }> {
-    const { numeroProcesso, tipo, status, clientId, responsavelId, parteContraria } = createProcessoDto;
+    const { numeroProcesso, tipo, status, tribunal, clientId, responsavelId, parteContraria } = createProcessoDto;
 
     await this.validator.validateProcessoNumberNotInUse(numeroProcesso);
     await this.validator.validateClientExists(clientId);
@@ -104,6 +106,7 @@ export class ProcessoService {
         numeroProcesso,
         tipo,
         status: status || 'ATIVO',
+        tribunal,
         clientId,
         responsavelId,
         parteContraria
