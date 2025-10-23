@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { Roles } from 'src/auth/decorator/roles.decorator';
-import { Role } from 'generated/prisma';
+import { Role } from '@prisma/client';
 import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
 import { UploadFile } from 'src/common/decorators/upload-file.decorator';
 import { DocumentDto } from './dto/document.dto';
