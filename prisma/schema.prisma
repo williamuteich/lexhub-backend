@@ -66,6 +66,7 @@ model Client {
   document     Document[]
   processos    Processo[]    @relation("ClienteProcessos")
   agendamentos Agendamento[]
+  boletos      Boleto[]
 
   firstAcessAt DateTime?
   createdAt    DateTime  @default(now())
@@ -166,20 +167,41 @@ model DocumentoProcesso {
 }
 
 model Agendamento {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId    String   @db.ObjectId
-  
-  titulo      String
-  descricao   String?
-  dataHora    DateTime
-  local       String?
-  link        String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String @db.ObjectId
+
+  titulo    String
+  descricao String?
+  dataHora  DateTime
+  local     String?
+  link      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([clientId])
   @@index([dataHora])
+}
 
+model Boleto {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String @db.ObjectId
+
+  titulo         String
+  observacao     String?
+  status         Boolean  @default(true)
+  DataVencimento DateTime
+
+  fileUrl  String
+  fileKey  String
+  fileSize Int?
+  mimeType String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
 }
