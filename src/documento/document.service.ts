@@ -47,7 +47,7 @@ export class DocumentService {
     private readonly validator: EntityExistsValidator,
   ) {}
 
-  async findOne(id: string): Promise<DocumentDto> {
+  async findOne(id: string): Promise<{ message: string; document: DocumentDto }> {
     const document = await this.prisma.document.findUnique({
       where: { id },
       select: this.selectDocument
@@ -57,7 +57,19 @@ export class DocumentService {
       throw new HttpException(MESSAGES.NOT_FOUND.DOCUMENT, HttpStatus.NOT_FOUND);
     }
 
-    return document;
+    return { message: MESSAGES.SUCCESS.RETRIEVED('Document'), document };
+  }
+
+  async findByClient(clientId: string): Promise<{ message: string; documents: DocumentDto[] }> {
+    await this.validator.validateClientExists(clientId);
+
+    const documents = await this.prisma.document.findMany({
+      where: { clientId },
+      select: this.selectDocument,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { message: MESSAGES.SUCCESS.RETRIEVED('Documents'), documents };
   }
 
   async create(clientId: string, name: string, file: Express.Multer.File): Promise<{ message: string; document: DocumentDto }> {
