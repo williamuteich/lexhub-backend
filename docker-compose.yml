@@ -8,10 +8,10 @@ services:
       - '6379:6379'
     volumes:
       - redis-data:/data
-    command: redis-server --requirepass minha_senha_dev --appendonly yes
+    command: redis-server --requirepass "minha_senha_devJ+GMu1cN|IZ\"J33m[58g|8^8W" --appendonly yes
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'redis-cli', '-a', 'minha_senha_dev', 'ping']
+      test: ['CMD', 'redis-cli', '-a', 'minha_senha_devJ+GMu1cN|IZ"J33m[58g|8^8W', 'ping']
       interval: 10s
       timeout: 3s
       retries: 3
