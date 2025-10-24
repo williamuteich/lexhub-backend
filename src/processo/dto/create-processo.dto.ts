@@ -20,13 +20,13 @@ export class CreateProcessoDto {
     @IsEnum(TipoProcesso)
     tipo: TipoProcesso;
 
-    @ApiProperty({ 
+    @ApiPropertyOptional({ 
         description: 'Judiciary',
         example: 'Tribunal de Justiça do Estado de Minas Gerais'
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    tribunal: string;
+    tribunal?: string;
 
     @ApiPropertyOptional({ 
         description: 'Process status',

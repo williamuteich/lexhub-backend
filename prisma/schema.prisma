@@ -123,7 +123,7 @@ model Processo {
   numeroProcesso Int            @unique
   tipo           TipoProcesso   @default(CIVEL)
   status         ProcessoStatus @default(ATIVO)
-  tribunal       String
+  tribunal       String?
 
   dataAbertura     DateTime  @default(now())
   dataEncerramento DateTime?

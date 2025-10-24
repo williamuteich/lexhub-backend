@@ -28,11 +28,12 @@ export class ProcessoDto {
   })
   status: ProcessoStatus;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Judiciary',
     example: 'Tribunal de Justiça do Estado de Minas Gerais',
+    nullable: true,
   })
-  tribunal: string;
+  tribunal?: string | null;
 
   @ApiProperty({
     description: 'Process opening date',
