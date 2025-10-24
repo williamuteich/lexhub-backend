@@ -6,21 +6,6 @@ export const RedisCacheConfig: CacheModuleAsyncOptions = {
   isGlobal: true,
   imports: [ConfigModule],
   useFactory: async (configService: ConfigService) => {
-    const redisUrl = configService.get<string>('REDIS_URL');
-
-    // Railway (produção) - usa REDIS_URL
-    if (redisUrl) {
-      const store = await redisStore({
-        url: redisUrl,
-        ttl: 600000,
-      });
-
-      return {
-        store: () => store,
-      };
-    }
-
-
     const store = await redisStore({
       socket: {
         host: configService.get<string>('REDIS_HOST', 'localhost'),
