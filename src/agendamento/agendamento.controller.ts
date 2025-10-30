@@ -14,7 +14,6 @@ import {
   ApiParam,
   ApiQuery 
 } from '@nestjs/swagger';
-import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Role } from '@prisma/client';
@@ -22,7 +21,6 @@ import { Roles } from 'src/auth/decorator/roles.decorator';
 
 @Controller('agendamento')
 @ApiTags('agendamento')
-@LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @Roles(Role.ADMIN, Role.COLLABORATOR)
 @ApiBearerAuth()

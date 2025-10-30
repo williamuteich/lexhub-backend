@@ -5,7 +5,6 @@ import { UpdateDocumentoProcessoDto } from './dto/update-documento-processo.dto'
 import { DocumentoProcessoDto } from './dto/documento-processo.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
-import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -15,7 +14,6 @@ import { FileValidationPipe } from 'src/common/pipes/file-validation.pipe';
 
 @Controller('documento-processo')
 @ApiTags('documento-processo')
-@LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @Roles(Role.ADMIN, Role.COLLABORATOR)
 @ApiBearerAuth()

@@ -11,7 +11,6 @@ import {
   Query 
 } from '@nestjs/common';
 import { ClientBoletoService } from './client-boleto.service';
-import { CreateClientBoletoDto } from './dto/create-client-boleto.dto';
 import { UpdateClientBoletoDto } from './dto/update-client-boleto.dto';
 import { BoletoDto } from './dto/boleto.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
@@ -25,7 +24,6 @@ import {
   ApiNotFoundResponse,
   ApiQuery
 } from '@nestjs/swagger';
-import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -35,7 +33,6 @@ import { UploadFile } from 'src/common/decorators/upload-file.decorator';
 
 @Controller('boleto')
 @ApiTags('boleto')
-@LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @Roles(Role.ADMIN, Role.COLLABORATOR)
 @ApiBearerAuth()

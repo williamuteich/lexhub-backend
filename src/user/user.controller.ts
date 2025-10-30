@@ -5,7 +5,6 @@ import { UploadAvatar } from 'src/common/decorators/upload-file.decorator';
 import { UserService } from './user.service';
 import { UserDto } from './dto/userDto';
 import { CreateUserDto } from './dto/user-create-dto';
-import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { TokenPayload } from 'src/auth/decorator/token-payload.decorator';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
@@ -18,7 +17,6 @@ import { FILE_UPLOAD_CONSTRAINTS } from 'src/storage/constants/file-upload.const
 
 @Controller('user')
 @ApiTags('user')
-@LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @ApiBearerAuth()
 export class UserController {

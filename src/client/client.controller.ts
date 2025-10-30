@@ -11,7 +11,6 @@ import {
   ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags
 } from '@nestjs/swagger';
 import { UploadAvatar } from 'src/common/decorators/upload-file.decorator';
-import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -22,7 +21,6 @@ import { FILE_UPLOAD_CONSTRAINTS } from 'src/storage/constants/file-upload.const
 
 @Controller('client')
 @ApiTags('clients')
-@LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @ApiBearerAuth()
 export class ClientController {

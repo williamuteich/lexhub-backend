@@ -47,8 +47,7 @@ import { CacheHelperModule } from 'src/cache/cache.module';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    AppService
   ],
 })
 export class AppModule {}

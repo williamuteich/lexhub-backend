@@ -3,7 +3,6 @@ import { EnderecoService } from './endereco.service';
 import { CreateEnderecoDto } from './dto/create-endereco.dto';
 import { UpdateEnderecoDto } from './dto/update-endereco.dto';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
-import { LongThrottle } from 'src/common/throttle/throttle.decorators';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorator/roles.decorator';
@@ -15,7 +14,6 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('endereco')
 @ApiTags('enderecos')
-@LongThrottle()
 @UseGuards(AuthTokenGuard, RolesGuard)
 @ApiBearerAuth()
 export class EnderecoController {
