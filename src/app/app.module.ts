@@ -17,15 +17,10 @@ import { EmailModule } from 'src/email/email.module';
 import { PasswordResetModule } from 'src/password-reset/password-reset.module';
 import { AgendamentoModule } from 'src/agendamento/agendamento.module';
 import { ClientBoletoModule } from 'src/client-boleto/client-boleto.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { RedisCacheConfig } from 'src/cache/cache.config';
-import { CacheHelperModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    CacheModule.registerAsync(RedisCacheConfig),
-    CacheHelperModule, 
     PrismaModule,
     AuthModule,
     UserModule, 

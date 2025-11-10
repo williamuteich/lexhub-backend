@@ -28,11 +28,11 @@ export class AuthService {
       throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, avatar: user.avatar, name: user.name, email: user.email, role: user.role };
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '1d', 
     });
-
+    
     return { token };
   }
 }

@@ -32,8 +32,8 @@ export class ClientController {
   @ApiQuery({ name: 'offset', required: false, example: 0, description: 'Offset of Clients to return' })
   @ApiOperation({ summary: 'Get all Clients', description: 'Returns all registered Clients' })
   @ApiOkResponse({ description: 'List of Clients', type: ClientDto, isArray: true })
-  findAll(@Query() paginationDto: PaginationDto): Promise<ClientDto[]> {
-    return this.clientService.findAll(paginationDto);
+  findAll(@Query() paginationDto: PaginationDto, @Query('search') search: string): Promise<ClientDto[]> {
+    return this.clientService.findAll(paginationDto, search);
   }
 
   @Get(':id')
@@ -77,7 +77,7 @@ export class ClientController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.COLLABORATOR)
   @ApiOperation({ summary: 'Delete a Client by ID' })
   @ApiOkResponse({ description: 'Client removed successfully' })
   remove(@Param('id') id: string): Promise<{ message: string }> {

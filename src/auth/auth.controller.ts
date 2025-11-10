@@ -58,8 +58,10 @@ export class AuthController {
     return { 
       user: {
         id: payload.sub,
+        name: payload.name,
         email: payload.email,
         role: payload.role,
+        avatar: payload.avatar
       }
     };
   }

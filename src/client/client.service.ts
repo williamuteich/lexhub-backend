@@ -60,10 +60,28 @@ export class ClientService {
     private readonly hashingService: HashingServiceProtocol,
     private readonly storageService: StorageService,
     private readonly validator: EntityExistsValidator,
-  ) {}
+  ) { }
 
-  async findAll(paginationDto: PaginationDto): Promise<ClientDto[]> {
-    const { limit, offset } = paginationDto;
+  async findAll(paginationDto: PaginationDto, search?: string): Promise<ClientDto[]> {
+    const limit = paginationDto.limit ?? 10;
+    const offset = paginationDto.offset ?? 0;
+
+    if (search) {
+      return await this.prisma.client.findMany({
+        take: limit,
+        skip: offset,
+        where: {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { cpf: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+        select: this.clientSelectBasic
+      });
+    }
+
     return await this.prisma.client.findMany({
       take: limit,
       skip: offset,
@@ -148,7 +166,7 @@ export class ClientService {
     await this.validator.validateClientExists(id);
 
     await this.prisma.client.delete({ where: { id } });
-    
+
     return { message: MESSAGES.SUCCESS.DELETED('Client') };
   }
 }

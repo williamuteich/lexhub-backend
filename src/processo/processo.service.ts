@@ -6,7 +6,6 @@ import { ProcessoDto } from './dto/processo.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EntityExistsValidator } from 'src/common/validators/entity-exists.validator';
 import { MESSAGES } from 'src/common/constants/messages.constant';
-import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class ProcessoService {
@@ -15,7 +14,6 @@ export class ProcessoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly validator: EntityExistsValidator,
-    private readonly cache: CacheService,
   ) { }
 
   private readonly selectProcessoBasic = {
@@ -29,6 +27,18 @@ export class ProcessoService {
     clientId: true,
     responsavelId: true,
     parteContraria: true,
+    client: {
+      select: {
+        id: true,
+        name: true,
+      }
+    },
+    responsavel: {
+      select: {
+        id: true,
+        name: true,
+      }
+    },
     createdAt: true,
     updatedAt: true,
   };
@@ -76,12 +86,6 @@ export class ProcessoService {
 
   async findAll(paginationDto: PaginationDto): Promise<{ message: string; processo: ProcessoDto[] }> {
     const { limit: take, offset: skip } = paginationDto;
-    const cacheKey = `processo:list:${take}:${skip}`;
-
-    const cached = await this.cache.get<ProcessoDto[]>(cacheKey);
-    if (cached) {
-      return { message: MESSAGES.SUCCESS.RETRIEVED('Processos'), processo: cached };
-    }
 
     const processo = await this.prisma.processo.findMany({
       take,
@@ -89,19 +93,10 @@ export class ProcessoService {
       select: this.selectProcessoBasic
     });
 
-    await this.cache.set(cacheKey, processo, 600000);
-
     return { message: MESSAGES.SUCCESS.RETRIEVED('Processos'), processo };
   }
 
   async findOne(id: string): Promise<{ message: string; processo: ProcessoDto }> {
-    const cacheKey = `processo:${id}`;
-
-    const cached = await this.cache.get<ProcessoDto>(cacheKey);
-    if (cached) {
-      return { message: MESSAGES.SUCCESS.RETRIEVED('Processo'), processo: cached };
-    }
-
     const processo = await this.prisma.processo.findUnique({
       where: { id },
       select: this.selectProcessoFull
@@ -110,8 +105,6 @@ export class ProcessoService {
     if (!processo) {
       throw new HttpException(MESSAGES.NOT_FOUND.PROCESSO, HttpStatus.NOT_FOUND);
     }
-
-    await this.cache.set(cacheKey, processo, 600000);
 
     return { message: MESSAGES.SUCCESS.RETRIEVED('Processo'), processo };
   }
@@ -132,10 +125,8 @@ export class ProcessoService {
         responsavelId,
         parteContraria
       },
-      select: this.selectProcessoBasic
+      select: this.selectProcessoFull
     });
-
-    await this.cache.delPattern('processo:list:*');
 
     return { message: MESSAGES.SUCCESS.CREATED('Processo'), processo };
   }
@@ -158,11 +149,8 @@ export class ProcessoService {
     const processo = await this.prisma.processo.update({
       where: { id },
       data: updateProcessoDto,
-      select: this.selectProcessoBasic
+      select: this.selectProcessoFull
     });
-
-    await this.cache.del(`processo:${id}`);
-    await this.cache.delPattern('processo:list:*');
 
     return { message: MESSAGES.SUCCESS.UPDATED('Processo'), processo };
   }
@@ -173,9 +161,6 @@ export class ProcessoService {
     await this.prisma.processo.delete({
       where: { id }
     });
-
-    await this.cache.del(`processo:${id}`);
-    await this.cache.delPattern('processo:list:*');
 
     return { message: MESSAGES.SUCCESS.DELETED('Processo') };
   }
